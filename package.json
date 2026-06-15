@@ -1,8 +1,11 @@
 {
   "name": "Remotion_Dopamine",
   "version": "1.0.0",
-  "description": "My Remotion video",
-  "repository": {},
+  "description": "音楽ビート同期キャラクターアニメーション動画生成システム",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ozekimasaki/Remotion_Dopamine.git"
+  },
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
