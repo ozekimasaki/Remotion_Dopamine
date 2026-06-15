@@ -1,15 +1,6 @@
 # Remotion Dopamine
 
 <p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif" width="400">
-    </picture>
-  </a>
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/Remotion-4.0.477-0d84ff?logo=remotion&logoColor=white" alt="Remotion">
   <img src="https://img.shields.io/badge/React-19.2.3-61dafb?logo=react&logoColor=white" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9.3-3178c6?logo=typescript&logoColor=white" alt="TypeScript">
