@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beat-Sync Video Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <h1 class="header-title">Beat-Sync Video Generator</h1>
+        <p class="header-desc">画像と音楽をアップするだけで、ビートに同期した動画を自動生成します</p>
+      </div>
+    </header>
+
+    <main class="main">
+      <form id="renderForm" class="form" novalidate>
+
+        <!-- Section 1: Upload -->
+        <fieldset class="card">
+          <legend class="card-legend">
+            <span class="legend-badge">1</span>
+            <span class="legend-text">ファイルを選択</span>
+          </legend>
+          <div class="upload-grid">
+            <div class="upload-wrapper">
+              <label for="imageInput" class="upload-drop" id="imageArea">
+                <div class="upload-placeholder" id="imagePlaceholder">
+                  <svg class="upload-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                  <span class="upload-label">キャラクター画像</span>
+                  <span class="upload-format">PNG / JPG / SVG</span>
+                </div>
+                <div class="upload-done hidden" id="imageDone">
+                  <img id="imagePreview" class="preview-img" alt="選択した画像">
+                  <span class="done-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                    選択済み
+                  </span>
+                </div>
+              </label>
+              <input type="file" id="imageInput" accept="image/*" hidden>
+            </div>
+
+            <div class="upload-wrapper">
+              <label for="musicInput" class="upload-drop" id="musicArea">
+                <div class="upload-placeholder" id="musicPlaceholder">
+                  <svg class="upload-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <span class="upload-label">音楽ファイル</span>
+                  <span class="upload-format">MP3 / WAV / OGG</span>
+                </div>
+                <div class="upload-done hidden" id="musicDone">
+                  <div class="music-icon-wrap">
+                    <svg class="upload-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  </div>
+                  <span class="music-filename" id="musicInfo"></span>
+                  <span class="done-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                    選択済み
+                  </span>
+                </div>
+              </label>
+              <input type="file" id="musicInput" accept="audio/*" hidden>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Section 2: Background & Motion -->
+        <fieldset class="card">
+          <legend class="card-legend">
+            <span class="legend-badge">2</span>
+            <span class="legend-text">背景とモーション</span>
+          </legend>
+
+          <!-- Animation Mode Toggle -->
+          <div class="field-group">
+            <span class="field-label">アニメーションモード</span>
+            <div class="mode-toggle" role="radiogroup" aria-label="アニメーションモード">
+              <label class="mode-option active">
+                <input type="radio" name="animMode" value="onset" checked>
+                <span class="mode-icon">⚡</span>
+                <span class="mode-name">オンセット</span>
+                <span class="mode-desc">ドラム/スネアに反応</span>
+              </label>
+              <label class="mode-option">
+                <input type="radio" name="animMode" value="bpm">
+                <span class="mode-icon">🎵</span>
+                <span class="mode-name">BPM</span>
+                <span class="mode-desc">BPM同期の規則的パルス</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Stripe preview -->
+          <div class="stripe-preview" id="stripePreview" aria-label="ストライププレビュー"></div>
+
+          <!-- Color presets -->
+          <div class="field-group">
+            <span class="field-label">カラープリセット</span>
+            <div class="preset-row">
+              <button type="button" class="preset-chip active" data-colors='["#ff0066","#00ccff"]'>
+                <span class="preset-swatch" style="background:linear-gradient(135deg,#ff0066 50%,#00ccff 50%)"></span>
+              </button>
+              <button type="button" class="preset-chip" data-colors='["#ffcc00","#ff0066"]'>
+                <span class="preset-swatch" style="background:linear-gradient(135deg,#ffcc00 50%,#ff0066 50%)"></span>
+              </button>
+              <button type="button" class="preset-chip" data-colors='["#00ff88","#0044ff"]'>
+                <span class="preset-swatch" style="background:linear-gradient(135deg,#00ff88 50%,#0044ff 50%)"></span>
+              </button>
+              <button type="button" class="preset-chip" data-colors='["#ffffff","#000000"]'>
+                <span class="preset-swatch" style="background:linear-gradient(135deg,#ffffff 50%,#000000 50%)"></span>
+              </button>
+              <button type="button" class="preset-chip" data-colors='["#ff00ff","#ffff00"]'>
+                <span class="preset-swatch" style="background:linear-gradient(135deg,#ff00ff 50%,#ffff00 50%)"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom colors -->
+          <div class="field-group">
+            <span class="field-label">カスタムカラー</span>
+            <div class="color-pair">
+              <label class="color-field">
+                <span class="color-field-label">色A</span>
+                <input type="color" id="stripeColor1" value="#ff0066">
+              </label>
+              <label class="color-field">
+                <span class="color-field-label">色B</span>
+                <input type="color" id="stripeColor2" value="#00ccff">
+              </label>
+            </div>
+          </div>
+
+          <!-- Sliders -->
+          <div class="field-group">
+            <label class="range-field">
+              <span class="range-label">角度</span>
+              <input type="range" id="stripeAngle" min="0" max="180" value="45">
+              <output class="range-output" id="angleValue">45°</output>
+            </label>
+          </div>
+          <div class="field-group">
+            <label class="range-field">
+              <span class="range-label">ストライプ幅</span>
+              <input type="range" id="stripeWidth" min="10" max="200" value="60">
+              <output class="range-output" id="widthValue">60px</output>
+            </label>
+          </div>
+          <div class="field-group">
+            <label class="range-field">
+              <span class="range-label">バウンス強度</span>
+              <input type="range" id="bounceIntensity" min="0.1" max="1" step="0.1" value="0.5">
+              <output class="range-output" id="bounceValue">0.5</output>
+            </label>
+          </div>
+          <div class="field-group">
+            <label class="color-field">
+              <span class="color-field-label">キャラクター色</span>
+              <input type="color" id="characterColor" value="#ffffff">
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Submit -->
+        <div class="submit-area">
+          <button type="submit" class="submit-btn" id="submitBtn" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            動画を生成する
+          </button>
+          <p class="submit-hint" id="submitHint">画像と音楽をアップロードしてください</p>
+        </div>
+      </form>
+
+      <!-- Progress -->
+      <section id="progressSection" class="status-card status-card--progress hidden">
+        <div class="status-header">
+          <div class="spinner"></div>
+          <h2 class="status-title">レンダリング中</h2>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressFill"></div>
+        </div>
+        <p class="status-detail" id="progressStatus">準備中...</p>
+        <p id="bpmDisplay" class="bpm-badge hidden"></p>
+      </section>
+
+      <!-- Result -->
+      <section id="resultSection" class="status-card status-card--success hidden">
+        <div class="status-header">
+          <span class="status-icon">✓</span>
+          <h2 class="status-title">完成しました</h2>
+        </div>
+        <p class="status-detail">動画の準備ができました</p>
+        <a id="downloadLink" class="download-btn" download>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          ダウンロード
+        </a>
+      </section>
+
+      <!-- Error -->
+      <section id="errorSection" class="status-card status-card--error hidden">
+        <div class="status-header">
+          <span class="status-icon status-icon--error">!</span>
+          <h2 class="status-title">エラーが発生しました</h2>
+        </div>
+        <p class="status-detail" id="errorMessage"></p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // State
+    let imageFile = null;
+    let musicFile = null;
+
+    // Elements
+    const form = document.getElementById('renderForm');
+    const imageInput = document.getElementById('imageInput');
+    const musicInput = document.getElementById('musicInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const musicInfo = document.getElementById('musicInfo');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitHint = document.getElementById('submitHint');
+    const progressSection = document.getElementById('progressSection');
+    const progressFill = document.getElementById('progressFill');
+    const progressStatus = document.getElementById('progressStatus');
+    const bpmDisplay = document.getElementById('bpmDisplay');
+    const resultSection = document.getElementById('resultSection');
+    const downloadLink = document.getElementById('downloadLink');
+    const errorSection = document.getElementById('errorSection');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // File handlers
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        imageFile = file;
+        imagePreview.src = URL.createObjectURL(file);
+        document.getElementById('imagePlaceholder').classList.add('hidden');
+        document.getElementById('imageDone').classList.remove('hidden');
+        updateSubmitButton();
+      }
+    });
+
+    musicInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        musicFile = file;
+        musicInfo.textContent = file.name;
+        document.getElementById('musicPlaceholder').classList.add('hidden');
+        document.getElementById('musicDone').classList.remove('hidden');
+        updateSubmitButton();
+      }
+    });
+
+    // Drag & Drop
+    ['imageArea', 'musicArea'].forEach(id => {
+      const area = document.getElementById(id);
+      area.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        area.classList.add('dragover');
+      });
+      area.addEventListener('dragleave', () => {
+        area.classList.remove('dragover');
+      });
+      area.addEventListener('drop', (e) => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (id === 'imageArea' && file && file.type.startsWith('image/')) {
+          imageFile = file;
+          imageInput.files = e.dataTransfer.files;
+          imagePreview.src = URL.createObjectURL(file);
+          document.getElementById('imagePlaceholder').classList.add('hidden');
+          document.getElementById('imageDone').classList.remove('hidden');
+        } else if (id === 'musicArea' && file && file.type.startsWith('audio/')) {
+          musicFile = file;
+          musicInput.files = e.dataTransfer.files;
+          musicInfo.textContent = file.name;
+          document.getElementById('musicPlaceholder').classList.add('hidden');
+          document.getElementById('musicDone').classList.remove('hidden');
+        }
+        updateSubmitButton();
+      });
+    });
+
+    // Animation mode toggle
+    document.querySelectorAll('.mode-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.mode-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+      });
+    });
+
+    // Color presets
+    document.querySelectorAll('.preset-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const colors = JSON.parse(btn.dataset.colors);
+        document.getElementById('stripeColor1').value = colors[0];
+        document.getElementById('stripeColor2').value = colors[1];
+        updateStripePreview();
+      });
+    });
+
+    // Sliders
+    document.getElementById('stripeAngle').addEventListener('input', (e) => {
+      document.getElementById('angleValue').textContent = e.target.value + '°';
+    });
+    document.getElementById('stripeWidth').addEventListener('input', (e) => {
+      document.getElementById('widthValue').textContent = e.target.value + 'px';
+    });
+    document.getElementById('bounceIntensity').addEventListener('input', (e) => {
+      document.getElementById('bounceValue').textContent = e.target.value;
+    });
+
+    function updateSubmitButton() {
+      const ready = !!(imageFile && musicFile);
+      submitBtn.disabled = !ready;
+      submitHint.textContent = ready
+        ? '設定を確認して生成ボタンを押してください'
+        : '画像と音楽をアップロードしてください';
+      submitBtn.classList.toggle('submit-btn--ready', ready);
+    }
+
+    // Stripe preview
+    function updateStripePreview() {
+      const c1 = document.getElementById('stripeColor1').value;
+      const c2 = document.getElementById('stripeColor2').value;
+      const angle = document.getElementById('stripeAngle').value;
+      const width = document.getElementById('stripeWidth').value;
+      const preview = document.getElementById('stripePreview');
+      preview.style.background = `repeating-linear-gradient(${angle}deg, ${c1}, ${c1} ${width}px, ${c2} ${width}px, ${c2} ${width * 2}px)`;
+    }
+    document.getElementById('stripeColor1').addEventListener('input', updateStripePreview);
+    document.getElementById('stripeColor2').addEventListener('input', updateStripePreview);
+    document.getElementById('stripeAngle').addEventListener('input', updateStripePreview);
+    document.getElementById('stripeWidth').addEventListener('input', updateStripePreview);
+    updateStripePreview();
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!imageFile || !musicFile) return;
+
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('music', musicFile);
+      formData.append('animMode', document.querySelector('input[name="animMode"]:checked').value);
+      formData.append('stripeColors', JSON.stringify([
+        document.getElementById('stripeColor1').value,
+        document.getElementById('stripeColor2').value
+      ]));
+      formData.append('stripeAngle', document.getElementById('stripeAngle').value);
+      formData.append('stripeWidth', document.getElementById('stripeWidth').value);
+      formData.append('bounceIntensity', document.getElementById('bounceIntensity').value);
+      formData.append('characterColor', document.getElementById('characterColor').value);
+
+      progressSection.classList.remove('hidden');
+      resultSection.classList.add('hidden');
+      errorSection.classList.add('hidden');
+      submitBtn.disabled = true;
+      progressFill.style.width = '10%';
+      progressStatus.textContent = 'アップロード中...';
+
+      try {
+        const response = await fetch('/api/render', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        pollStatus(data.id);
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    async function pollStatus(jobId) {
+      const poll = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/render/${jobId}/status`);
+          const data = await res.json();
+
+          if (data.bpm) {
+            bpmDisplay.textContent = `BPM ${data.bpm}`;
+            bpmDisplay.classList.remove('hidden');
+          }
+
+          if (data.status === 'rendering') {
+            const pct = Math.max(15, Math.min(95, data.progress || 15));
+            progressFill.style.width = `${pct}%`;
+            progressStatus.textContent = data.progress > 0
+              ? `レンダリング中... ${data.progress}%`
+              : 'BPM解析完了、レンダリング準備中...';
+          } else if (data.status === 'done') {
+            clearInterval(poll);
+            progressFill.style.width = '100%';
+            progressStatus.textContent = '完了!';
+            setTimeout(() => {
+              progressSection.classList.add('hidden');
+              resultSection.classList.remove('hidden');
+              downloadLink.href = `/api/render/${jobId}/download`;
+              submitBtn.disabled = false;
+            }, 1000);
+          } else if (data.status === 'error') {
+            clearInterval(poll);
+            showError(data.error || 'レンダリングに失敗しました');
+          }
+        } catch (err) {
+          clearInterval(poll);
+          showError(err.message);
+        }
+      }, 2000);
+    }
+
+    function showError(msg) {
+      progressSection.classList.add('hidden');
+      errorSection.classList.remove('hidden');
+      errorMessage.textContent = msg;
+      submitBtn.disabled = false;
+    }
+  </script>
+</body>
+</html>
