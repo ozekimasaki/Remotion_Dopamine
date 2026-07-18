@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9.3-3178c6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white" alt="Express">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+  <img src="https://img.shields.io/badge/License-UNLICENSED-lightgrey" alt="License">
 </p>
 
 音楽のビート（オンセット / BPM）に同期したキャラクターアニメーション動画を自動生成する Remotion ベースの Web アプリケーション。
@@ -29,6 +29,12 @@
 | 音声解析 | node-web-audio-api (BPM + FFT + オンセット) |
 | ビルド / 実行 | tsx, Remotion CLI |
 | 言語 | TypeScript (strict) |
+
+## 要件
+
+- **Node.js 20 以上**（推奨。Remotion 4 の動作要件を満たすバージョン。開発は Node 20 系で確認）
+- **npm**（`package-lock.json` を同梱）
+- レンダリングには Remotion CLI が内部で利用する Chrome Headless Shell が必要（`npm install` 時に自動ダウンロードされる）
 
 ## クイックスタート
 
@@ -55,6 +61,29 @@ npm run server
 ```bash
 npm run build
 ```
+
+### Lint + 型チェック
+
+```bash
+npm run lint
+```
+
+## 開発コマンド一覧
+
+| コマンド | 説明 |
+|---|---|
+| `npm run dev` | Remotion Studio 起動（プレビュー） |
+| `npm run server` | Express API サーバー起動（http://localhost:3456） |
+| `npm run build` | Remotion bundle（ブラウザ側コードのバンドル） |
+| `npm run lint` | ESLint（`src`）+ TypeScript 型チェック（`tsc`） |
+| `npm run upgrade` | Remotion 関連パッケージのアップグレード |
+
+## 対応ファイル形式
+
+API サーバー（`/api/render`）が受け付けるアップロード形式（1 ファイル最大 100MB）:
+
+- **画像** — `.png` / `.jpg` / `.jpeg` / `.svg` / `.webp`
+- **音楽** — `.mp3` / `.wav` / `.ogg` / `.m4a` / `.aac`
 
 ## API エンドポイント
 
@@ -87,5 +116,6 @@ server/               # Express バックエンド（Node.js 側）
 
 ## ライセンス
 
-[Remotion License](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md) に準じます。  
-Remotion は個人・小規模チーム向けに無料、企業利用には有料ライセンスが必要です。
+本リポジトリは非公開プロジェクトです（`package.json`: `"license": "UNLICENSED"`, `"private": true`）。オープンソースライセンスは付与されていません。
+
+なお、本プロジェクトが利用する [Remotion](https://www.remotion.dev/) には独自のライセンス条件があり、個人・小規模チーム向けには無料、一定規模以上の企業利用には有料ライセンスが必要です。詳細は [Remotion License](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md) を参照してください。
