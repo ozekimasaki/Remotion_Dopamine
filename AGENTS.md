@@ -24,9 +24,9 @@ src/                          # Remotionフロントエンド（ブラウザ側�
     Background.tsx            # 斜めストライプ背景（CSS gradient、静止）
     Character.tsx             # キャラクター表示 + アニメーション（scale/offset/sway）
   lib/
-    types.ts                  # 型定義（AnimMode, BeatSyncInput, AudioFrameData等）
-    beatDetector.ts           # ブラウザ側ビート同期ユーティリティ
-    animations.ts             # イージング関数（getBounceScale等）
+    types.ts                  # 型定義（AnimMode, BeatSyncInput, AudioFrameData, Composition定数）
+    beatDetector.ts           # ブラウザ側ビート同期ユーティリティ（getFrameAudioData / getSmoothedAudio を Character が使用。getBeatDistance は現状未使用）
+    animations.ts             # イージング関数（getBounceScale / getBounceOffsetY。現状どこからも import されていない未使用ユーティリティ）
   index.css                   # Tailwind CSS
 
 server/                       # Express バックエンド（Node.js側）
@@ -50,13 +50,17 @@ scripts/                      # 開発用スクリプト
 | `npm run dev` | Remotion Studio起動（プレビュー用） |
 | `npm run server` | Express APIサーバー起動（http://localhost:3456） |
 | `npm run build` | Remotion bundle（ブラウザ側コードのバンドル） |
-| `npm run lint` | ESLint + TypeScript型チェック |
+| `npm run lint` | ESLint（`src` のみ）+ TypeScript 型チェック（`eslint src && tsc`） |
+| `npm run upgrade` | Remotion 関連パッケージのアップグレード（`remotion upgrade`） |
+
+> **Lint/typecheck の注意**: 専用の `test` / `typecheck` スクリプトは存在しない（型チェックは `npm run lint` に含まれる `tsc`（`noEmit`））。`tsconfig.json` は `remotion.config.ts` を `exclude` している。`scripts/testFreq.ts` は `npx tsx scripts/testFreq.ts` で直接実行する（npm スクリプトなし）。
 
 ## アーキテクチャ
 
 ### レンダリングフロー
 
 1. WebUI → `POST /api/render` (FormData: image, music, パラメータ)
+   - multer 受付形式: 画像 `.png/.jpg/.jpeg/.svg/.webp`、音楽 `.mp3/.wav/.ogg/.m4a/.aac`、ファイルサイズ上限 100MB
 2. サーバーがファイルを`uploads/`に保存 → `renderer.ts`でジョブ作成
 3. `beatAnalyzer.ts` で音声解析:
    - オートコリレーション方式のBPM検出（60〜200 BPM範囲）
@@ -93,14 +97,21 @@ scripts/                      # 開発用スクリプト
 ## コーディング規約
 
 - **TypeScript strict モード**（noUnusedLocals有効）
-- **Prettier**: tabWidth=2, bracketSpacing=true, useTabs=false
-- **ESLint**: `@remotion/eslint-config-flat`
+- **Prettier**: tabWidth=2, bracketSpacing=true, useTabs=false（`.prettierrc`。自動整形用の npm スクリプトはない）
+- **ESLint**: `@remotion/eslint-config-flat`（`no-explicit-any` をエラーとして検出し、`any` は原則禁止）
 - **サーバー/ブラウザ分離**: `server/` はNode.js専用（node-web-audio-api等）、`src/lib/` はブラウザセーフ
 - **frameDataのonsetフィールド必須**: JSONシリアライズ時にonsetを含めないとキャラクターが動かない
 - **propsはJSONファイル経由**: シェルのクォート問題を避けるため`--props="filepath"`形式
 - **エラー文字列化**: `[object Object]`表示を避けるため `err?.message || err?.stderr || String(err)` で処理
 - **レンダリングは非同期exec**: `execSync`はサーバーのイベントループをブロックするため使用禁止
 - **Windows環境**: `execFileSync`による.cmd実行はEINVALになるため`exec`を使用
+
+## 既知の注意点
+
+- **ライセンス**: `package.json` は `"license": "UNLICENSED"`, `"private": true`（非公開プロジェクト。LICENSE ファイルなし）。
+- **未使用コード**: `src/lib/animations.ts` の各関数と `beatDetector.ts` の `getBeatDistance` は現状どこからも呼ばれていない。スケール計算は `Character.tsx` 内でインラインに行っている。
+- **未使用依存**: `animejs` / `@vfx-js/*` は `package.json` にあるが `src/` では未使用。
+- **frameData のフィールド**: `energy` / `mid` / `high` も JSON に含まれるが、現状のアニメーションは主に `bass`（ベースの動き）と `onset`（ヒット）を使用。
 
 ## Remotion Composition
 
